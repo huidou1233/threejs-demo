@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Waves</title>
+  <style>
+    body {
+      text-align: center;
+      margin: 0px;
+      overflow: hidden;
+    }
+  </style>
+</head>
+<body>
+  <script src="./lib/three.min.js"></script>
+  <script src="./lib/Projector.js"></script>
+  <script src="./lib/CanvasRenderer.js"></script>
+
+  <script>
+    var container;
+    var camera, scene, renderer;
+
+    var mouseX = 0, mouseY = 0;
+
+    var mesh;
+    var torus;
+    var material;
+
+    var windowHalfX = window.innerWidth / 2;
+    var windowHalfY = window.innerHeight / 2;
+
+    init();
+    animate();
+
+    function init() {
+      container = document.createElement('div');
+      document.body.appendChild(container);
+
+      //透视投影相机
+      camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 10000);
+      camera.position.x = 100;
+      camera.position.y = 200;
+      camera.position.z = 1000;
+
+      //定义场景
+      scene = new THREE.Scene();
+
+      //创建圆环
+      torus = new THREE.TorusGeometry(100, 2, 50, 50);
+        
+      material = new THREE.MeshPhongMaterial({
+        color: 0xff0000,
+        wireframe: true,
+        wireframeLinewidth: 20
+      })
+      mesh = new THREE.Mesh(torus, material);
+      scene.add(mesh);
+      
+      
+      //渲染器
+      renderer = new THREE.CanvasRenderer();
+       // 设置像素比，针对高清屏
+      renderer.setPixelRatio( window.devicePixelRatio );
+      // 设置像素比，针对高清屏
+      renderer.setSize( window.innerWidth, window.innerHeight );
+      // 设置画布大小
+      renderer.setClearColor(0xf0f0f0)
+      container.appendChild( renderer.domElement );
+
+
+      document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+      document.addEventListener( 'touchstart', onDocumentTouchStart, false );
+      document.addEventListener( 'touchmove', onDocumentTouchMove, false );
+
+      window.addEventListener( 'resize', onWindowResize, false );
+      
+    }
+
+    function onWindowResize() {
+      windowHalfX = window.innerWidth / 2;
+      windowHalfY = window.innerHeight / 2;
+
+      //照相机水平方向和竖直方向长度的比值
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+
+      renderer.setSize( window.innerWidth, window.innerHeight );
+    }
+
+    function onDocumentMouseMove( event ) {
+
+      mouseX = event.clientX - windowHalfX;
+      mouseY = event.clientY - windowHalfY;
+
+    }
+
+    function onDocumentTouchStart( event ) {
+      if ( event.touches.length === 1 ) {
+        event.preventDefault();
+
+        mouseX = event.touches[ 0 ].pageX - windowHalfX;
+        mouseY = event.touches[ 0 ].pageY - windowHalfY;
+
+      }
+    }
+
+    function onDocumentTouchMove ( event ) {
+      if ( event.touches.length === 1 ) {
+
+        event.preventDefault();
+
+        mouseX = event.touches[ 0 ].pageX - windowHalfX;
+        mouseY = event.touches[ 0 ].pageY - windowHalfY;
+
+      }
+    }
+
+    var radius = 100;
+    function animate() {
+      requestAnimationFrame( animate );
+      render();
+    }
+
+    function render() {
+      // camera.position.x += ( mouseX - camera.position.x ) * .05;
+      // camera.position.y += ( - mouseY - camera.position.y ) * .05;
+      radius++;
+      console.log(radius)
+      if(radius > 350){
+        radius = 100;
+        mesh.geometry = null;
+        torus = new THREE.TorusGeometry(radius, 2, 50, 50);
+        mesh.geometry = torus
+      }else {
+        mesh.geometry = new THREE.TorusGeometry(radius, 2, 50, 50);
+      }
+      
+      // mesh.geometry = new THREE.TorusGeometry(radius, 2, 20, 50);
+
+      //指定相机看的方向
+      camera.lookAt( scene.position );
+
+      renderer.render( scene, camera );
+    }
+  </script>
+</body>
+</html>
