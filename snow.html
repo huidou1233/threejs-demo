@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Document</title>
+  <style>
+    body{
+      text-align: center;
+      margin: 0px;
+      overflow: hidden; 
+      background: black;
+    }
+  </style>
+</head>
+<body>
+  <script src="./lib/three.min.js"></script>
+  <script>
+    var container;
+    var camera, renderer, scene;
+    var particles = [];
+    var material, map, textureLoader;
+
+    var halfX = window.innerWidth / 2;
+    var halfY = window.innerHeight / 2;
+
+    var mouseX = 0, mouseY = 0;
+
+    var fallSpeen = 2;
+    //雪花个数
+    var amount = 1000;
+
+    init();
+    animate();
+
+    function init() {
+      container = document.createElement("div");
+      document.body.appendChild(container);
+
+      camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 10000);
+      camera.position.z = 100;
+
+      scene = new THREE.Scene();
+
+      //实例化一个纹理加载器
+      textureLoader = new THREE.TextureLoader();
+      //加载雪花图片
+      map = textureLoader.load('./img/snow21.gif');
+      material = new THREE.SpriteMaterial({map: map});
+
+      //创建雪花粒子，指定粒子位置，并对粒子做随机缩放
+      for( i = 0; i < amount; i++) {
+        var particle = new THREE.Sprite( material );
+        var randomScale = randomRange(10, 20);
+
+        particle.position.x = randomRange(-1000, 1000);
+        particle.position.y = randomRange(-1000, 1000);
+        particle.position.z = randomRange(-1000, 1000);
+        particle.scale.x = particle.scale.y = particle.scale.z = randomScale;
+
+        particle.v = new THREE.Vector3(0, -fallSpeen, 0);
+        particle.v.z = (1 * randomRange(-1, 1));
+        particle.v.x = (1 * randomRange(-1, 1));
+
+        particles.push(particle);
+        scene.add( particle );
+      }
+                     
+      renderer = new THREE.WebGLRenderer({alpha: true});
+      renderer.setPixelRatio(window.devicePixelRatio);
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      container.appendChild(renderer.domElement);
+
+      document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+      document.addEventListener( 'touchstart', onDocumentTouchStart, false );
+      document.addEventListener( 'touchmove', onDocumentTouchMove, false );
+
+      window.addEventListener( 'resize', onWindowResize, false );
+
+    }
+
+
+    function onWindowResize() {
+      windowHalfX = window.innerWidth / 2;
+      windowHalfY = window.innerHeight / 2;
+
+      //照相机水平方向和竖直方向长度的比值
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+
+      renderer.setSize( window.innerWidth, window.innerHeight );
+    }
+
+    function onDocumentMouseMove( event ) {
+
+      mouseX = event.clientX - windowHalfX;
+      mouseY = event.clientY - windowHalfY;
+
+    }
+
+    function onDocumentTouchStart( event ) {
+      if ( event.touches.length === 1 ) {
+        event.preventDefault();
+
+        mouseX = event.touches[ 0 ].pageX - windowHalfX;
+        mouseY = event.touches[ 0 ].pageY - windowHalfY;
+
+      }
+    }
+
+    function onDocumentTouchMove ( event ) {
+      if ( event.touches.length === 1 ) {
+
+        event.preventDefault();
+
+        mouseX = event.touches[ 0 ].pageX - windowHalfX;
+        mouseY = event.touches[ 0 ].pageY - windowHalfY;
+
+      }
+    }
+
+    function randomRange(min, max) {
+      return ((Math.random() * (max - min)) + min)
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+      render();
+    }
+
+    function render() {
+      for(var i = 0; i < particles.length; i++) {
+        var particle = particles[i];
+        var pp = particle.position;
+
+        pp.add(particle.v);
+        if(pp.y < -1000) {
+          pp.y = 1000;
+        }
+
+        if(pp.x > 1000) {
+          pp.x = -1000;
+        }else if (pp.x < -1000) {
+          pp.x = 1000;
+        }
+
+        if(pp.z > 1000) {
+          pp.z = -1000;
+        }else if (pp.z < -1000) {
+          pp.z = 1000;
+        }
+
+      }
+      renderer.render(scene, camera);
+    }
+  </script>
+</body>
+</html>
